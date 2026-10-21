@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist thuê mặt bằng</title>
+<style>
+  /* Color tokens: same palette as "Bức tranh lớn v2" */
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --border: #e3e2dd;
+    --accent: #0f6e8c; --accent-soft: #e3f1f5;
+    --s1: #0f6e8c; --s2: #c06a12; --s3: #2f7d4f;
+    --good: #2f7d4f; --good-soft: #e5f3ea; --bad: #c0392b; --bad-soft: #f8e7e3;
+    --warn: #8a6a12; --warn-soft: #fbf3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+      --accent: #5fb8d4; --accent-soft: #1d3138;
+      --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+      --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+      --warn: #e0c060; --warn-soft: #332d1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+    --accent: #5fb8d4; --accent-soft: #1d3138;
+    --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+    --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+    --warn: #e0c060; --warn-soft: #332d1c;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* Top step switcher linking the 3 files */
+  .steps-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .steps-nav a { white-space: nowrap; padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+  .steps-nav a:hover { background: var(--accent-soft); color: var(--text); }
+  .steps-nav a.on { background: var(--sc); color: var(--surface); font-weight: 600; }
+
+  main { padding: 32px 48px 80px; max-width: 1040px; margin: 0 auto; }
+  header { border-left: 6px solid var(--sc); padding-left: 16px; }
+  header .no { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--sc); text-transform: uppercase; }
+  header h1 { margin: 2px 0 6px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); }
+  section { margin-top: 40px; }
+  h2 { font-size: 20px; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 24px 0 10px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .callout { border-radius: 10px; padding: 12px 16px; margin: 16px 0; background: var(--accent-soft); }
+  .callout.bad { background: var(--bad-soft); }
+  .callout.warn { background: var(--warn-soft); }
+  .callout.good { background: var(--good-soft); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .kpi .v { font-size: 22px; font-weight: 700; color: var(--sc); }
+  .kpi .l { font-size: 13px; color: var(--muted); }
+
+  /* Checklists */
+  ul.check { list-style: none; padding: 0; margin: 0; }
+  ul.check li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px solid var(--border); }
+  ul.check li:last-child { border-bottom: 0; }
+  ul.check li::before { content: ""; position: absolute; left: 2px; top: 10px; width: 14px; height: 14px; border: 2px solid var(--sc); border-radius: 4px; }
+  ul.no li::before { border-color: var(--bad); content: "×"; color: var(--bad); font-weight: 700; font-size: 13px; line-height: 12px; text-align: center; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px 8px; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td.name { font-weight: 600; }
+  .stop { color: var(--bad); font-weight: 600; }
+  .go { color: var(--good); font-weight: 600; }
+  .chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .chip.must { background: var(--bad-soft); color: var(--bad); }
+  .chip.est { background: var(--warn-soft); color: var(--warn); }
+  .chip.ok { background: var(--good-soft); color: var(--good); }
+
+  /* SVG charts: flow chart + Gantt, theme-aware via tokens */
+  .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; overflow-x: auto; }
+  .canvas svg { width: 100%; height: auto; display: block; }
+  .canvas svg.flow { min-width: 640px; max-width: 840px; margin: 0 auto; }
+  .canvas svg.gantt { min-width: 760px; }
+  .fc-proc { fill: var(--surface); stroke: var(--sc); stroke-width: 1.6; }
+  .fc-key { fill: var(--accent-soft); stroke: var(--sc); stroke-width: 2.6; }
+  .fc-dec { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.6; }
+  .fc-stop { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.6; }
+  .fc-end { fill: var(--good-soft); stroke: var(--good); stroke-width: 1.6; }
+  .fc-side { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .fc-t { font: 12.5px system-ui, sans-serif; fill: var(--text); }
+  .fc-tb { font: 700 12.5px system-ui, sans-serif; fill: var(--text); }
+  .fc-e { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+  .fc-arrow { fill: var(--muted); }
+  .fc-l { font: 600 11px system-ui, sans-serif; fill: var(--muted); }
+  .fc-l.no { fill: var(--bad); } .fc-l.yes { fill: var(--good); }
+  .g-grid { stroke: var(--border); stroke-width: 1; }
+  .g-tick { font: 11px system-ui, sans-serif; fill: var(--muted); }
+  .g-lbl { font: 12.5px system-ui, sans-serif; fill: var(--text); }
+  .g-grp { font: 700 12.5px system-ui, sans-serif; fill: var(--sc); }
+  .g-bar { fill: var(--sc); }
+  .g-bar.soft { fill: var(--sc); opacity: .45; }
+  .g-ms { fill: var(--bad); }
+  .g-ms-t { font: 600 11px system-ui, sans-serif; fill: var(--bad); }
+  .g-ms-l { stroke: var(--bad); stroke-width: 1; stroke-dasharray: 3 3; }
+  .g-band { fill: var(--accent-soft); }
+  .g-band-t { font: 600 11px system-ui, sans-serif; fill: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+
+  /* Mandatory items emphasized in red */
+  tr.must td { background: var(--bad-soft); }
+  tr.must td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
+  tr.must td.crit, tr.must td.name { color: var(--bad); font-weight: 600; }
+  ul.check.must li { color: var(--bad); font-weight: 600; }
+  ul.check.must li strong { color: var(--bad); }
+  ul.check.must li::before { border-color: var(--bad); }
+  .must-box { border: 2px solid var(--bad); }
+
+  @media (max-width: 760px) {
+    main { padding: 24px 16px 60px; }
+    .grid3, .grid2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body style="--sc: var(--s1)">
+<main>
+  <header>
+    <div class="no">Thuê mặt bằng · Vạn Phúc</div>
+    <h1>Checklist thuê mặt bằng</h1>
+    <p>Shophouse căn giữa cạnh nhạc nước Vạn Phúc, 5×4 m. 31 vấn đề cần làm rõ trước khi ký.</p>
+  </header>
+
+  <section>
+    <h2>Ba bên liên quan</h2>
+    <div class="grid3">
+      <div class="card kpi"><div class="v">Chủ nhà</div><div class="l">Bên duy nhất ký hợp đồng thuê</div></div>
+      <div class="card kpi" style="--sc: var(--bad)"><div class="v">Ban quản lý</div><div class="l">Quyết định lịch show, <strong>không ký hợp đồng thuê</strong></div></div>
+      <div class="card kpi"><div class="v">Phường</div><div class="l">Giấy phép, vỉa hè, bàn ghế ngoài trời</div></div>
+    </div>
+    <div class="callout bad">
+      <strong class="stop">12 vấn đề tô đỏ phải rõ trước khi cọc.</strong>
+      Show dừng thì chủ nhà không chịu trách nhiệm, bên thuê vẫn trả 15 tr/tháng. Chỉ điều khoản "Show dừng" (dòng 26) bảo vệ bên thuê.
+    </div>
+  </section>
+
+  <section>
+    <h2>Danh sách cần làm rõ</h2>
+    <h3>Điều kiện chủ nhà đưa ra · cọc 4 tháng, thuê 15 tr/tháng, căn giữa</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr class="must"><td>1</td><td class="name">Cọc 60 tr (4 tháng)</td><td class="crit">Xin giảm còn 2–3 tháng. Ghi rõ: hoàn cọc trong bao nhiêu ngày, khoản nào bị trừ, hoàn 100% nếu không có giấy phép</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>2</td><td class="name">Tiền trả trước khi mở</td><td class="crit">Cọc + tháng đầu = 75 tr. Nếu trả theo quý = 105 tr. Xin trả theo tháng</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>3</td><td class="name">Giá 15 tr/tháng</td><td class="crit">So với giá căn tương tự cùng dãy. Xin giảm giá năm đầu</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr class="must"><td>4</td><td class="name">Căn giữa: có thấy quán không</td><td class="crit">Từ chỗ xem show có thấy cửa và biển hiệu không. Đếm người đi qua cửa trong 1 đêm show</td><td>Tự kiểm tra</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>5</td><td class="name">Căn giữa: hàng xóm</td><td class="crit">Hai căn bên bán gì. Vỉa hè trước cửa được dùng tới đâu</td><td>Chủ nhà + BQL</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>A. Chủ nhà và giấy tờ căn nhà</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr class="must"><td>6</td><td class="name">Quyền cho thuê</td><td class="crit">Sổ hồng hoặc HĐ mua bán, CCCD. Đồng sở hữu thì ký đủ. Thuê lại thì cần chủ gốc đồng ý bằng văn bản</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>7</td><td class="name">Thế chấp</td><td class="crit">Căn có đang thế chấp ngân hàng không</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>8</td><td class="name">Được bán đồ uống</td><td class="crit">Quy định ngành nghề của chủ đầu tư và BQL cho tầng trệt</td><td>Chủ nhà + BQL</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>9</td><td class="name">Chỉ thuê 20 m²</td><td class="crit">Lối đi chung, giờ ra vào, đăng ký hộ KD được không. Chủ nhà không cho thuê phần còn lại để bán đồ uống</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>10</td><td class="name">Chủ nhà bán căn</td><td class="crit">HĐ thuê vẫn hiệu lực với chủ mới</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>B. Ban quản lý khu và nhạc nước</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr class="must"><td>11</td><td class="name">Lịch show</td><td class="crit">Lịch 12 tháng bằng văn bản, kèm tình hình mùa mưa năm trước</td><td>BQL</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>12</td><td class="name">Kế hoạch của khu</td><td class="crit">Có sửa, dừng, dời nhạc nước không. BQL có tự mở quầy nước không</td><td>BQL</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>13</td><td class="name">Quy định khu</td><td class="crit">Bàn ghế ngoài trời, biển hiệu, giờ mở cửa, âm thanh, rác</td><td>BQL + phường</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>14</td><td class="name">Xe giao hàng</td><td class="crit">Khung giờ được vào khu. Giờ show có cấm xe không</td><td>BQL</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>15</td><td class="name">Chỗ để xe</td><td class="crit">Cho khách và nhân viên đêm show</td><td>BQL</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>16</td><td class="name">Phí của khu</td><td class="crit">Phí quản lý, dịch vụ, rác: bao nhiêu, ai trả</td><td>BQL + chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>C. Hạ tầng</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr class="must"><td>17</td><td class="name">Điện</td><td class="crit">Đủ tải tủ mát, máy xay, máy lạnh. Đồng hồ riêng. Giá mỗi kWh</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>18</td><td class="name">Nước, nhà vệ sinh</td><td class="crit">Có nhà vệ sinh dùng được, có chỗ đặt bồn rửa</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>19</td><td class="name">PCCC</td><td class="crit">Đã nghiệm thu chưa, có lối thoát hiểm không</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>20</td><td class="name">Hiện trạng</td><td class="crit">Biên bản bàn giao có ảnh: thấm dột, nền, trần</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>21</td><td class="name">Cải tạo, trả mặt bằng</td><td class="crit">Được sửa gì. Khi trả có phải khôi phục như cũ không</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>D. Tiền</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr><td>22</td><td class="name">Thuế cho thuê</td><td class="crit">Giá đã gồm thuế chưa. Chủ nhà có khai thuế không (bên thuê cần chứng từ)</td><td>Chủ nhà + kế toán</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>23</td><td class="name">Tăng giá</td><td class="crit">Trần tăng giá mỗi năm, tính bằng %. Cọc không phải bù thêm khi tăng giá</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>24</td><td class="name">Thời gian sửa sang</td><td class="crit">Miễn tiền thuê khi chưa kinh doanh</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>E. Thời hạn và đường thoát</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr class="must"><td>25</td><td class="name">Thời hạn</td><td class="crit">Từ 3 năm, hoặc có quyền gia hạn với giá cố định</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>26</td><td class="name">Show dừng</td><td class="crit">Dừng từ 2 tháng: giảm giá thuê, hoặc được chấm dứt không bị phạt</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr class="must"><td>27</td><td class="name">Sang nhượng</td><td class="crit">Được sang nhượng hoặc cho thuê lại</td><td>Chủ nhà</td><td><span class="chip must">Trước khi cọc</span></td><td class="num">☐</td></tr><tr><td>28</td><td class="name">Chấm dứt trước hạn</td><td class="crit">Mức phạt mỗi bên. Chủ nhà lấy lại sớm thì bồi thường phần đã đầu tư</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>29</td><td class="name">Gia hạn</td><td class="crit">Báo trước bao nhiêu ngày</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div><h3>F. Thủ tục</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Vấn đề</th><th>Cần làm rõ</th><th>Ai</th><th>Mức</th><th class="num">Đã rõ</th></tr></thead>
+<tbody><tr><td>30</td><td class="name">Công chứng</td><td class="crit">Hỏi luật sư hoặc phòng công chứng trước khi ký</td><td>Luật sư</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr><tr><td>31</td><td class="name">Giấy tờ đăng ký hộ KD</td><td class="crit">Chủ nhà đưa HĐ thuê và bản sao giấy tờ nhà ngay khi ký</td><td>Chủ nhà</td><td><span class="chip est">Đàm phán</span></td><td class="num">☐</td></tr></tbody></table></div>
+  </section>
+
+  <section>
+    <div class="callout warn">
+      <strong>Hai câu quyết định:</strong> BQL có đưa lịch show bằng văn bản không? Chủ nhà có ghi điều khoản "Show dừng" không? Một câu "không" thì chưa cọc.
+    </div>
+    <p class="muted">Đây là câu hỏi cần đặt ra, không phải quy định thật của Vạn Phúc. Phần pháp lý nên nhờ luật sư hoặc phòng công chứng xem lại trước khi ký.</p>
+  </section>
+</main>
+</body>
+</html>

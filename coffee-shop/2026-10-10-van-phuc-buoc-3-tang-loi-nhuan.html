@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bước 3 · Tăng lợi nhuận</title>
+<style>
+  /* Color tokens: same palette as "Bức tranh lớn v2" */
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --border: #e3e2dd;
+    --accent: #0f6e8c; --accent-soft: #e3f1f5;
+    --s1: #0f6e8c; --s2: #c06a12; --s3: #2f7d4f;
+    --good: #2f7d4f; --good-soft: #e5f3ea; --bad: #c0392b; --bad-soft: #f8e7e3;
+    --warn: #8a6a12; --warn-soft: #fbf3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+      --accent: #5fb8d4; --accent-soft: #1d3138;
+      --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+      --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+      --warn: #e0c060; --warn-soft: #332d1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+    --accent: #5fb8d4; --accent-soft: #1d3138;
+    --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+    --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+    --warn: #e0c060; --warn-soft: #332d1c;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* Top step switcher linking the 3 files */
+  .steps-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .steps-nav a { white-space: nowrap; padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+  .steps-nav a:hover { background: var(--accent-soft); color: var(--text); }
+  .steps-nav a.on { background: var(--sc); color: var(--surface); font-weight: 600; }
+
+  main { padding: 32px 48px 80px; max-width: 1040px; margin: 0 auto; }
+  header { border-left: 6px solid var(--sc); padding-left: 16px; }
+  header .no { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--sc); text-transform: uppercase; }
+  header h1 { margin: 2px 0 6px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); }
+  section { margin-top: 40px; }
+  h2 { font-size: 20px; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 24px 0 10px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .callout { border-radius: 10px; padding: 12px 16px; margin: 16px 0; background: var(--accent-soft); }
+  .callout.bad { background: var(--bad-soft); }
+  .callout.warn { background: var(--warn-soft); }
+  .callout.good { background: var(--good-soft); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .kpi .v { font-size: 22px; font-weight: 700; color: var(--sc); }
+  .kpi .l { font-size: 13px; color: var(--muted); }
+
+  /* Checklists */
+  ul.check { list-style: none; padding: 0; margin: 0; }
+  ul.check li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px solid var(--border); }
+  ul.check li:last-child { border-bottom: 0; }
+  ul.check li::before { content: ""; position: absolute; left: 2px; top: 10px; width: 14px; height: 14px; border: 2px solid var(--sc); border-radius: 4px; }
+  ul.no li::before { border-color: var(--bad); content: "×"; color: var(--bad); font-weight: 700; font-size: 13px; line-height: 12px; text-align: center; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px 8px; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td.name { font-weight: 600; }
+  .stop { color: var(--bad); font-weight: 600; }
+  .go { color: var(--good); font-weight: 600; }
+  .chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .chip.must { background: var(--bad-soft); color: var(--bad); }
+  .chip.est { background: var(--warn-soft); color: var(--warn); }
+  .chip.ok { background: var(--good-soft); color: var(--good); }
+
+  /* SVG charts: flow chart + Gantt, theme-aware via tokens */
+  .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; overflow-x: auto; }
+  .canvas svg { width: 100%; height: auto; display: block; }
+  .canvas svg.flow { min-width: 640px; max-width: 840px; margin: 0 auto; }
+  .canvas svg.gantt { min-width: 760px; }
+  .fc-proc { fill: var(--surface); stroke: var(--sc); stroke-width: 1.6; }
+  .fc-key { fill: var(--accent-soft); stroke: var(--sc); stroke-width: 2.6; }
+  .fc-dec { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.6; }
+  .fc-stop { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.6; }
+  .fc-end { fill: var(--good-soft); stroke: var(--good); stroke-width: 1.6; }
+  .fc-side { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .fc-t { font: 12.5px system-ui, sans-serif; fill: var(--text); }
+  .fc-tb { font: 700 12.5px system-ui, sans-serif; fill: var(--text); }
+  .fc-e { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+  .fc-arrow { fill: var(--muted); }
+  .fc-l { font: 600 11px system-ui, sans-serif; fill: var(--muted); }
+  .fc-l.no { fill: var(--bad); } .fc-l.yes { fill: var(--good); }
+  .g-grid { stroke: var(--border); stroke-width: 1; }
+  .g-tick { font: 11px system-ui, sans-serif; fill: var(--muted); }
+  .g-lbl { font: 12.5px system-ui, sans-serif; fill: var(--text); }
+  .g-grp { font: 700 12.5px system-ui, sans-serif; fill: var(--sc); }
+  .g-bar { fill: var(--sc); }
+  .g-bar.soft { fill: var(--sc); opacity: .45; }
+  .g-ms { fill: var(--bad); }
+  .g-ms-t { font: 600 11px system-ui, sans-serif; fill: var(--bad); }
+  .g-ms-l { stroke: var(--bad); stroke-width: 1; stroke-dasharray: 3 3; }
+  .g-band { fill: var(--accent-soft); }
+  .g-band-t { font: 600 11px system-ui, sans-serif; fill: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+
+  /* Mandatory items emphasized in red */
+  tr.must td { background: var(--bad-soft); }
+  tr.must td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
+  tr.must td.crit, tr.must td.name { color: var(--bad); font-weight: 600; }
+  ul.check.must li { color: var(--bad); font-weight: 600; }
+  ul.check.must li strong { color: var(--bad); }
+  ul.check.must li::before { border-color: var(--bad); }
+  .must-box { border: 2px solid var(--bad); }
+
+  @media (max-width: 760px) {
+    main { padding: 24px 16px 60px; }
+    .grid3, .grid2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body style="--sc: var(--s3)">
+<nav class="steps-nav">
+  <a href="2026-10-10-van-phuc-buoc-1-mo-nhanh.html">Bước 1 · Mở nhanh</a>
+  <a href="2026-10-10-van-phuc-buoc-2-hoan-thien.html">Bước 2 · Hoàn thiện</a>
+  <a class="on" href="2026-10-10-van-phuc-buoc-3-tang-loi-nhuan.html">Bước 3 · Tăng lợi nhuận</a>
+</nav>
+<main>
+  <header>
+    <div class="no">Bước 3 / 3 · 03/2027 → hết hợp đồng</div>
+    <h1>Hoàn chỉnh và tăng lợi nhuận</h1>
+    <p>Hai giai đoạn: tối ưu để qua mùa mưa đầu tiên (T3 → T11/2027), sau đó mới mở rộng nguồn thu (từ T12/2027).</p>
+  </header>
+
+  <section>
+    <h2>Mục tiêu bước này</h2>
+    <div class="grid3">
+      <div class="card kpi"><div class="v">≥ 8 tr/tháng</div><div class="l">Lãi tiền mặt bình quân 12 tháng, tính cả mùa mưa</div></div>
+      <div class="card kpi"><div class="v">≥ 4,6 tr</div><div class="l">Lãi mỗi tháng mùa mưa: mức cần để bình quân năm đạt 8 tr</div></div>
+      <div class="card kpi"><div class="v">Hồi vốn trong HĐ</div><div class="l">Hồi vốn trước khi hết hợp đồng, kể cả phần gia hạn</div></div>
+    </div>
+    <div class="callout warn">
+      Theo v2, nếu tính mùa vụ thì lãi bình quân năm chỉ khoảng 7,2 tr, chưa tới 8 tr. Bước 3 phải lấy thêm ít nhất 0,8 tr/tháng từ các đòn bẩy dưới đây. Nếu lương thật là 18 tr thì phải lấy thêm 3,8 tr.
+    </div>
+  </section>
+
+  <section>
+    <h2>Flow chart</h2>
+    <div class="canvas"><svg class="flow" viewBox="0 0 825 1076" role="img" aria-label="Flow chart bước 3"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fc-arrow" d="M0,0 L10,5 L0,10 z"/></marker></defs><rect class="fc-end" x="190.0" y="20.0" width="300" height="38" rx="22"/><text class="fc-tb" x="340" y="43.5" text-anchor="middle">Bắt đầu · T3/2027</text><path class="fc-e" d="M340,58 L340,92" marker-end="url(#ah)"/><rect class="fc-proc" x="190.0" y="92.0" width="300" height="54" rx="8"/><text class="fc-t" x="340" y="115.5" text-anchor="middle">Chọn 1–2 đòn bẩy tiếp theo</text><text class="fc-t" x="340" y="131.5" text-anchor="middle">(theo thứ tự trong bảng)</text><path class="fc-e" d="M340,146 L340,180" marker-end="url(#ah)"/><rect class="fc-proc" x="190.0" y="180.0" width="300" height="38" rx="8"/><text class="fc-t" x="340" y="203.5" text-anchor="middle">Làm 4 tuần, đo mỗi Chủ nhật</text><path class="fc-e" d="M340,218 L340,252" marker-end="url(#ah)"/><polygon class="fc-dec" points="340,252 465.0,300.0 340,348 215.0,300.0"/><text class="fc-t" x="340" y="304.5" text-anchor="middle">Lãi tăng?</text><path class="fc-e" d="M340,348 L340,382" marker-end="url(#ah)"/><text class="fc-l yes" x="348" y="368">Có</text><rect class="fc-side" x="625.0" y="281.0" width="190" height="38" rx="8"/><text class="fc-t" x="720" y="304.5" text-anchor="middle">Bỏ, quay lại cách cũ</text><path class="fc-e" d="M465.0,300.0 L625.0,300.0" marker-end="url(#ah)"/><text class="fc-l " x="473.0" y="293.0">Không</text><path class="fc-e" d="M720,319.0 L720,401.0 L490.0,401.0" marker-end="url(#ah)"/><rect class="fc-proc" x="190.0" y="382.0" width="300" height="38" rx="8"/><text class="fc-t" x="340" y="405.5" text-anchor="middle">Cập nhật sổ tay vận hành</text><path class="fc-e" d="M340,420 L340,454" marker-end="url(#ah)"/><polygon class="fc-dec" points="340,454 465.0,502.0 340,550 215.0,502.0"/><text class="fc-t" x="340" y="498.5" text-anchor="middle">Quỹ dự phòng dùng &gt; 22,5 tr</text><text class="fc-t" x="340" y="514.5" text-anchor="middle">hoặc show dừng ≥ 2 tháng?</text><path class="fc-e" d="M340,550 L340,584" marker-end="url(#ah)"/><text class="fc-l yes" x="348" y="570">Không</text><rect class="fc-stop" x="625.0" y="483.0" width="190" height="38" rx="8"/><text class="fc-t" x="720" y="506.5" text-anchor="middle">Rao sang nhượng</text><path class="fc-e" d="M465.0,502.0 L625.0,502.0" marker-end="url(#ah)"/><text class="fc-l no" x="473.0" y="495.0">Có</text><polygon class="fc-dec" points="340,584 465.0,632.0 340,680 215.0,632.0"/><text class="fc-t" x="340" y="628.5" text-anchor="middle">Đã qua</text><text class="fc-t" x="340" y="644.5" text-anchor="middle">30/11/2027?</text><path class="fc-e" d="M340,680 L340,714" marker-end="url(#ah)"/><text class="fc-l yes" x="348" y="700">Có</text><rect class="fc-side" x="12.0" y="613.0" width="160" height="38" rx="8"/><text class="fc-t" x="92" y="636.5" text-anchor="middle">Tháng tiếp theo</text><path class="fc-e" d="M215.0,632.0 L172.0,632.0" marker-end="url(#ah)"/><text class="fc-l no" x="178.0" y="625.0">Chưa</text><path class="fc-e" d="M92,613.0 L92,119.0 L190.0,119.0" marker-end="url(#ah)"/><polygon class="fc-dec" points="340,714 465.0,762.0 340,810 215.0,762.0"/><text class="fc-t" x="340" y="758.5" text-anchor="middle">Lãi bình quân</text><text class="fc-t" x="340" y="774.5" text-anchor="middle">12 tháng ≥ 8 tr?</text><path class="fc-e" d="M340,810 L340,844" marker-end="url(#ah)"/><text class="fc-l yes" x="348" y="830">Có</text><rect class="fc-stop" x="625.0" y="735.0" width="190" height="54" rx="8"/><text class="fc-t" x="720" y="758.5" text-anchor="middle">Không gia hạn,</text><text class="fc-t" x="720" y="774.5" text-anchor="middle">rao sang nhượng</text><path class="fc-e" d="M465.0,762.0 L625.0,762.0" marker-end="url(#ah)"/><text class="fc-l no" x="473.0" y="755.0">Không</text><rect class="fc-key" x="190.0" y="844.0" width="300" height="38" rx="8"/><text class="fc-tb" x="340" y="867.5" text-anchor="middle">Gia hạn hợp đồng giá cố định</text><path class="fc-e" d="M340,882 L340,916" marker-end="url(#ah)"/><rect class="fc-proc" x="190.0" y="916.0" width="300" height="54" rx="8"/><text class="fc-t" x="340" y="939.5" text-anchor="middle">Giai đoạn B: đối tác show,</text><text class="fc-t" x="340" y="955.5" text-anchor="middle">đồ uống sự kiện, combo</text><path class="fc-e" d="M340,970 L340,1004" marker-end="url(#ah)"/><rect class="fc-end" x="190.0" y="1004.0" width="300" height="38" rx="22"/><text class="fc-tb" x="340" y="1027.5" text-anchor="middle">Tăng lợi nhuận dài hạn</text></svg></div>
+    <p class="muted">Vòng lặp hằng tháng: thử 1–2 đòn bẩy, giữ cái có tác dụng, bỏ cái không. Cổng 30/11/2027 quyết định gia hạn hay sang nhượng.</p>
+  </section>
+
+  <section>
+    <h2>Gantt chart</h2>
+    <div class="canvas"><svg class="gantt" viewBox="0 0 856 388" role="img" aria-label="Gantt bước 3"><rect class="g-band" x="325.2" y="56" width="262.4" height="326"/><text class="g-band-t" x="329.2" y="384">Mùa mưa</text><line class="g-grid" x1="250.0" y1="54" x2="250.0" y2="374"/><text class="g-tick" x="253.0" y="50">T3/27</text><line class="g-grid" x1="288.2" y1="54" x2="288.2" y2="374"/><line class="g-grid" x1="325.2" y1="54" x2="325.2" y2="374"/><text class="g-tick" x="328.2" y="50">T5/27</text><line class="g-grid" x1="363.3" y1="54" x2="363.3" y2="374"/><line class="g-grid" x1="400.3" y1="54" x2="400.3" y2="374"/><text class="g-tick" x="403.3" y="50">T7/27</text><line class="g-grid" x1="438.5" y1="54" x2="438.5" y2="374"/><line class="g-grid" x1="476.7" y1="54" x2="476.7" y2="374"/><text class="g-tick" x="479.7" y="50">T9/27</text><line class="g-grid" x1="513.7" y1="54" x2="513.7" y2="374"/><line class="g-grid" x1="551.8" y1="54" x2="551.8" y2="374"/><text class="g-tick" x="554.8" y="50">T11/27</text><line class="g-grid" x1="588.8" y1="54" x2="588.8" y2="374"/><line class="g-grid" x1="627.0" y1="54" x2="627.0" y2="374"/><text class="g-tick" x="630.0" y="50">T1/28</text><line class="g-grid" x1="665.2" y1="54" x2="665.2" y2="374"/><line class="g-grid" x1="700.9" y1="54" x2="700.9" y2="374"/><text class="g-tick" x="703.9" y="50">T3/28</text><line class="g-grid" x1="739.1" y1="54" x2="739.1" y2="374"/><line class="g-grid" x1="776.1" y1="54" x2="776.1" y2="374"/><text class="g-tick" x="779.1" y="50">T5/28</text><line class="g-grid" x1="814.3" y1="54" x2="814.3" y2="374"/><text class="g-grp" x="4" y="78">Giai đoạn A · Tối ưu (không thêm vốn)</text><line class="g-grid" x1="0" y1="84" x2="850" y2="84" /><text class="g-lbl" x="14" y="102">1. Giá vốn 35% → 32%</text><rect class="g-bar" x="250.0" y="91" width="73.9" height="14" rx="4"/><text class="g-lbl" x="14" y="126">2. Giá đêm show +2.000đ</text><rect class="g-bar" x="288.2" y="115" width="73.9" height="14" rx="4"/><text class="g-lbl" x="14" y="150">3. Khách ngày thường +5 ly</text><rect class="g-bar" x="250.0" y="139" width="337.6" height="14" rx="4"/><text class="g-lbl" x="14" y="174">4. Doanh thu đêm show +10%</text><rect class="g-bar" x="363.3" y="163" width="112.1" height="14" rx="4"/><text class="g-lbl" x="14" y="198">5. Lương −10% (xếp ca theo show)</text><rect class="g-bar" x="400.3" y="187" width="112.1" height="14" rx="4"/><text class="g-lbl" x="14" y="222">6. Đàm phán tiền thuê</text><rect class="g-bar" x="513.7" y="211" width="73.9" height="14" rx="4"/><text class="g-lbl" x="14" y="246">Theo dõi chỉ số mỗi Chủ nhật</text><rect class="g-bar soft" x="250.0" y="235" width="600.0" height="14" rx="4"/><text class="g-grp" x="4" y="270">Giai đoạn B · Mở rộng nguồn thu</text><line class="g-grid" x1="0" y1="276" x2="850" y2="276" /><text class="g-lbl" x="14" y="294">Gia hạn hợp đồng</text><rect class="g-bar" x="588.8" y="283" width="37.0" height="14" rx="4"/><text class="g-lbl" x="14" y="318">Đề xuất đối tác chính của show</text><rect class="g-bar" x="588.8" y="307" width="109.7" height="14" rx="4"/><text class="g-lbl" x="14" y="342">Đồ uống cho sự kiện</text><rect class="g-bar" x="627.0" y="331" width="223.0" height="14" rx="4"/><text class="g-lbl" x="14" y="366">Combo kèm vé / sự kiện</text><rect class="g-bar" x="700.9" y="355" width="149.1" height="14" rx="4"/><line class="g-ms-l" x1="362.1" y1="16" x2="362.1" y2="374"/><path class="g-ms" d="M362.1,4 l6,6 l-6,6 l-6,-6 z"/><text class="g-ms-t" x="371.1" y="14" text-anchor="start">+6 tháng</text><line class="g-ms-l" x1="587.6" y1="16" x2="587.6" y2="374"/><path class="g-ms" d="M587.6,4 l6,6 l-6,6 l-6,-6 z"/><text class="g-ms-t" x="596.6" y="14" text-anchor="start">Cổng cuối mùa mưa</text></svg></div>
+    <div class="legend"><span><i style="background:var(--sc)"></i>Việc chính</span><span><i style="background:var(--sc);opacity:.45"></i>Việc chạy nền / liên tục</span><span><i style="background:var(--bad);width:10px;height:10px;transform:rotate(45deg)"></i>Mốc / cổng quyết định</span><span><i style="background:var(--accent-soft);border:1px solid var(--border)"></i>Mùa mưa</span></div>
+  </section>
+
+
+
+  <section>
+    <h2>Giai đoạn A · Tối ưu, không cần thêm vốn (T3 → T11/2027)</h2>
+    <p>Xếp theo thứ tự làm: việc nào không tốn tiền và không phụ thuộc người khác thì làm trước.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Đòn bẩy</th><th>Làm cụ thể</th><th class="num">Lãi thêm/tháng*</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="name">Giá vốn 35% → 32%</td><td>Đàm phán giá theo số lượng với 2 nhà cung cấp, đối chiếu số ly bán ra với nguyên liệu đã dùng mỗi tuần, cắt món hao hụt cao</td><td class="num go">+2,4 tr</td></tr>
+          <tr><td>2</td><td class="name">Giá đêm show +2.000đ/ly</td><td>Tăng giá menu đêm show, giữ nguyên giá ngày thường cho cư dân. Theo dõi số ly 2 tuần sau khi tăng</td><td class="num go">+2,2 tr</td></tr>
+          <tr><td>3</td><td class="name">Ngày thường +5 ly/ngày</td><td>Thẻ tích điểm, phiếu ngày thường, đơn qua app vào ngày mưa, món mới theo mùa. <strong>Đòn bẩy quan trọng nhất cho mùa mưa</strong></td><td class="num go">+1,9 tr</td></tr>
+          <tr><td>4</td><td class="name">Doanh thu đêm show +10%</td><td>Combo 2 ly, QR đặt trước, thêm 1 trạm pha giờ cao điểm, mở sớm hơn trước show</td><td class="num go">+4,3 tr</td></tr>
+          <tr><td>5</td><td class="name">Lương −10%</td><td>Xếp ca theo lịch show thật, part-time chỉ gọi vào đêm show, ngày mưa chuyển ngay sang ca ngày thường</td><td class="num go">+1,5 tr</td></tr>
+          <tr><td>6</td><td class="name">Tiền thuê −10%</td><td>Đàm phán khi gia hạn, dùng số liệu mùa mưa làm lý lẽ</td><td class="num go">+1,0 tr</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">* Ước tính của v2, so với kịch bản không tính mùa vụ. Đây là ước tính, không phải số thực. Mỗi lần chỉ làm 1–2 đòn bẩy để biết cái nào có tác dụng.</p>
+
+    <h3>Kế hoạch cho ngày mưa và show huỷ</h3>
+    <ul class="check card">
+      <li>Quản lý ca chuyển ngay sang chế độ ngày thường: cho part-time nghỉ, pha sẵn từng mẻ nhỏ.</li>
+      <li>Đẩy đơn trên app giao hàng và nhắn tin cho khách có thẻ tích điểm.</li>
+      <li>Theo dõi mỗi Chủ nhật: số ly ngày thường (trung bình 7 ngày), số đêm show thật, số thành viên mới.</li>
+      <li>Báo động khi ngày thường dưới 50 ly 2 tuần liền, hoặc số đêm show thật ít hơn lịch từ 2 đêm trở lên.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Giai đoạn B · Mở rộng nguồn thu (từ T12/2027)</h2>
+    <div class="callout">
+      <strong>Chỉ bắt đầu khi đã qua mùa mưa đầu tiên với lãi bình quân 12 tháng ≥ 8 tr/tháng.</strong> Mở rộng khi quán chưa tự đứng được chỉ làm khoản lỗ lớn hơn.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hướng</th><th>Làm gì</th><th>Điều kiện</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Đối tác chính của show</td><td>Đề xuất với ban quản lý: quầy đồ uống chính thức, có tên trên thông báo show</td><td>Có 12 tháng số liệu và không có phàn nàn nào từ cư dân</td></tr>
+          <tr><td class="name">Đồ uống cho sự kiện</td><td>Nhận đặt đồ uống cho sự kiện của khu, công ty, trường học quanh khu</td><td>Có quản lý ca đủ sức chạy quán khi chủ đi sự kiện</td></tr>
+          <tr><td class="name">Combo kèm vé hoặc sự kiện</td><td>Bán gói đồ uống cùng các sự kiện có bán vé</td><td>Ban quản lý đồng ý</td></tr>
+          <tr><td class="name">Gia hạn hợp đồng</td><td>Gia hạn với giá cố định, đổi lại cam kết thuê dài hạn hơn</td><td>Đạt mục tiêu 8 tr/tháng</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">Vẫn không làm: mở bếp, tự tổ chức sự kiện, menu đêm show quá 8 món, giảm giá đêm show.</p>
+  </section>
+
+  <section>
+    <h2>Checklist nghiệm thu</h2>
+    <div class="callout bad"><strong class="stop">7 điều kiện bắt buộc (dòng tô đỏ)</strong> phải đạt hết mới được sang bước sau. Dòng &quot;Cổng cuối mùa mưa&quot; quyết định gia hạn hay sang nhượng. Giai đoạn B chỉ bắt đầu khi dòng này đạt.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Hạng mục</th><th>Tiêu chí đạt</th><th>Bằng chứng / cách kiểm tra</th><th class="num">Hạn</th><th>Mức</th><th class="num">Đạt</th></tr></thead>
+      <tbody><tr class="must"><td>1</td><td class="name">Giá vốn</td><td class="crit">Giá vốn ≤ 32% doanh thu, 4 tuần liền</td><td>Đối chiếu ly bán với nguyên liệu dùng</td><td class="num">30/04/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr><td>2</td><td class="name">Giá đêm show</td><td class="crit">Đã tăng 2.000đ/ly, số ly đêm show không giảm quá 5%</td><td>So sổ ghi 2 tuần trước/sau</td><td class="num">31/05/2027</td><td><span class="chip est">Nên có</span></td><td class="num">☐</td></tr><tr class="must"><td>3</td><td class="name">Khách ngày thường</td><td class="crit">Trung bình ≥ 55 ly/ngày thường, kể cả tháng mưa</td><td>Sổ ghi trung bình 7 ngày</td><td class="num">30/09/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr><td>4</td><td class="name">Thẻ tích điểm</td><td class="crit">Số thành viên tăng mỗi tháng, có khách quay lại vào ngày mưa</td><td>Danh sách thành viên</td><td class="num">30/09/2027</td><td><span class="chip est">Nên có</span></td><td class="num">☐</td></tr><tr><td>5</td><td class="name">Doanh thu đêm show</td><td class="crit">Tăng ≥ 10% so với mùa khô cùng số đêm show</td><td>Báo cáo tách đêm show</td><td class="num">31/08/2027</td><td><span class="chip est">Nên có</span></td><td class="num">☐</td></tr><tr class="must"><td>6</td><td class="name">Lương</td><td class="crit">Lương ≤ 19% doanh thu cả trong tháng mưa</td><td>Bảng lương + doanh thu</td><td class="num">30/09/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr class="must"><td>7</td><td class="name">Mốc +6 tháng</td><td class="crit">Lãi tháng mưa đầu tiên (T5/2027) ≥ 4,6 tr</td><td>Báo cáo lãi lỗ T5/2027</td><td class="num">05/06/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr class="must"><td>8</td><td class="name">Quỹ dự phòng</td><td class="crit">Đã dùng ≤ 22,5 tr để bù lỗ</td><td>Sao kê tài khoản quán</td><td class="num">Liên tục</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr class="must"><td>9</td><td class="name">Cổng cuối mùa mưa</td><td class="crit">Lãi tiền mặt bình quân 12 tháng ≥ 8 tr/tháng</td><td>Báo cáo lãi lỗ 12 tháng</td><td class="num">30/11/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr class="must"><td>10</td><td class="name">Gia hạn hợp đồng</td><td class="crit">Gia hạn với giá cố định, hồi vốn nằm trong thời hạn hợp đồng</td><td>Phụ lục hợp đồng</td><td class="num">31/12/2027</td><td><span class="chip must">Bắt buộc</span></td><td class="num">☐</td></tr><tr><td>11</td><td class="name">Đối tác show</td><td class="crit">Có thoả thuận bằng văn bản với ban quản lý</td><td>Văn bản thoả thuận</td><td class="num">28/02/2028</td><td><span class="chip est">Nên có</span></td><td class="num">☐</td></tr><tr><td>12</td><td class="name">Nguồn thu mới</td><td class="crit">Sự kiện / combo đóng góp lãi dương, không làm chậm quầy đêm show</td><td>Báo cáo lãi lỗ theo nguồn</td><td class="num">30/06/2028</td><td><span class="chip est">Nên có</span></td><td class="num">☐</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Kiểm tra cuối mùa mưa · 30/11/2027</h2>
+    <div class="grid2">
+      <div class="callout good" style="margin:0">
+        <strong class="go">Lãi bình quân 12 tháng ≥ 8 tr/tháng</strong><br>
+        Gia hạn hợp đồng, bắt đầu Giai đoạn B.
+      </div>
+      <div class="callout bad" style="margin:0">
+        <strong class="stop">Dưới 8 tr/tháng</strong><br>
+        Không gia hạn, rao sang nhượng, bán lại thiết bị. Không bơm thêm vốn để "chờ mùa khô sau".
+      </div>
+    </div>
+    <p class="muted">Trước: <a href="2026-10-10-van-phuc-buoc-2-hoan-thien.html">Bước 2 · Hoàn thiện</a>. Số liệu gốc lấy từ "Bức tranh lớn v2" (06/10/2026), đa số vẫn là ước tính.</p>
+  </section>
+</main>
+</body>
+</html>

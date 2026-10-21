@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sổ tay vận hành</title>
+<style>
+  /* Color tokens: light by default, dark via media query or data-theme */
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+    --border: #e3e2dd; --accent: #0f6e8c; --accent-soft: #e3f1f5;
+    --good: #2f7d4f; --good-soft: #e5f3ea; --bad: #b3412f; --bad-soft: #f8e7e3;
+    --warn: #8a6a12; --warn-soft: #fbf3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99;
+      --border: #33322f; --accent: #5fb8d4; --accent-soft: #1d3138;
+      --good: #6cc392; --good-soft: #1c2e23; --bad: #e88a78; --bad-soft: #352220;
+      --warn: #e0c060; --warn-soft: #332d1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99;
+    --border: #33322f; --accent: #5fb8d4; --accent-soft: #1d3138;
+    --good: #6cc392; --good-soft: #1c2e23; --bad: #e88a78; --bad-soft: #352220;
+    --warn: #e0c060; --warn-soft: #332d1c;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* Layout: fixed sidebar menu + content */
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  nav { position: sticky; top: 0; height: 100vh; padding: 28px 20px; border-right: 1px solid var(--border); background: var(--surface); }
+  nav .brand { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  nav .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 24px; }
+  nav ol { list-style: none; padding: 0; margin: 0; counter-reset: m; }
+  nav li { counter-increment: m; }
+  nav a { display: flex; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+  nav a::before { content: counter(m); font-weight: 700; min-width: 14px; }
+  nav a:hover { background: var(--accent-soft); color: var(--text); }
+  nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+  main { padding: 40px 48px 80px; max-width: 1080px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; background: var(--warn-soft); margin-left: 6px; }
+
+  section { margin-top: 48px; }
+  h2 { font-size: 21px; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 28px 0 10px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .callout { border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+  .callout.info { background: var(--accent-soft); }
+  .callout.warn { background: var(--warn-soft); }
+  .callout.bad { background: var(--bad-soft); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px 8px; }
+  td.time { white-space: nowrap; font-weight: 600; color: var(--accent); width: 110px; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.peak td { background: var(--bad-soft); }
+
+  .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; overflow-x: auto; }
+  .diagram .mermaid { display: flex; justify-content: center; }
+
+  ul.check { list-style: none; padding: 0; margin: 6px 0; }
+  ul.check li { padding: 4px 0 4px 26px; position: relative; }
+  ul.check li::before { content: "☐"; position: absolute; left: 0; color: var(--muted); }
+  .card h4 { margin: 0 0 6px; font-size: 14.5px; }
+  .tag { display: inline-block; font-size: 11.5px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; }
+  .muted { color: var(--muted); font-size: 13px; }
+
+  /* Mobile: menu becomes a horizontal bar on top */
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav { position: sticky; height: auto; padding: 10px 16px; border-right: 0; border-bottom: 1px solid var(--border); z-index: 10; }
+    nav .brand, nav .sub { display: none; }
+    nav ol { display: flex; gap: 4px; overflow-x: auto; }
+    nav a { white-space: nowrap; padding: 6px 10px; font-size: 13px; }
+    main { padding: 24px 16px 60px; }
+    .cols, .cols3 { grid-template-columns: 1fr; }
+    html { scroll-padding-top: 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <div class="brand">Sổ tay vận hành</div>
+    <div class="sub">Mặt bằng 5×4 m · Nhạc nước Vạn Phúc</div>
+    <ol>
+      <li><a href="#mo-hinh">Mô hình vận hành</a></li>
+      <li><a href="#dem-show">Quy trình đêm show</a></li>
+      <li><a href="#ngay-thuong">Quy trình ngày thường</a></li>
+      <li><a href="#ton-kho">Tồn kho & đặt hàng</a></li>
+      <li><a href="#kiem-soat">Kiểm soát & sự cố</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header>
+      <h1>Quy trình vận hành mặt bằng cạnh nhạc nước <span class="badge">ĐỀ XUẤT</span></h1>
+      <p>20 m² · đồ uống + snack · mục tiêu 150 ly/đêm show và 50 ly/ngày thường. Giờ show, định mức và số người là giả định, cần chỉnh theo thực tế.</p>
+    </header>
+
+    <!-- 1. Operating model -->
+    <section id="mo-hinh">
+      <h2>1. Mô hình vận hành</h2>
+      <div class="callout info">
+        <strong>Nguyên tắc:</strong> cùng một mặt bằng chạy 2 chế độ. <strong>SHOW</strong> ưu tiên tốc độ (số ly/giờ),
+        <strong>DAILY</strong> ưu tiên giữ khách quen với chi phí thấp nhất. Quản lý ca là người bật/tắt chế độ.
+      </div>
+
+      <h3>Vòng vận hành mỗi tuần</h3>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart TD
+  W1["Thứ 2 · Chủ<br/>xác nhận lịch show, dự báo số ly, xếp ca"] --> W2{"Ngày có show?"}
+  W2 -- "Có" --> W3["Trước 1 ngày · Quản lý ca<br/>đặt nguyên liệu, đá theo dự báo"]
+  W3 --> W4["14:00–17:00<br/>nhận hàng, pha sẵn, briefing"]
+  W4 --> W5["17:00–21:30<br/>chế độ SHOW, đội 4 người"]
+  W5 --> W6["21:30–22:15<br/>đóng ca, đếm tồn, báo cáo"]
+  W2 -- "Không" --> W7["Chế độ DAILY<br/>2 ca × 1 người"]
+  W7 --> W6
+  W6 --> W8["Chủ nhật · Chủ<br/>review KPI tuần, chỉnh dự báo, menu, ca"]
+  W8 --> W1
+</pre>
+      </div>
+
+      <h3>Nhân sự và ca</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Vai trò</th><th>Ngày thường</th><th>Đêm show</th><th>Việc chính</th></tr>
+          <tr><td>Chủ</td><td>Không bắt buộc có mặt</td><td>Có mặt giờ cao điểm (tuần đầu)</td><td>Dự báo, đặt lịch ca, review KPI, quyết định giá/menu</td></tr>
+          <tr><td>Quản lý ca (nhân viên full-time)</td><td>Ca sáng 6:00–14:00</td><td>14:00–22:15</td><td>Mở/đóng cửa, đặt hàng, bật chế độ, xử lý sự cố, báo cáo</td></tr>
+          <tr><td>Part-time ca chiều</td><td>14:00–21:45</td><td>Trạm pha 1</td><td>Bán hàng, pha chế, vệ sinh</td></tr>
+          <tr><td>Part-time ca show (2 người)</td><td>—</td><td>16:30–22:00</td><td>Thu ngân/QR, trạm pha 2, runner</td></tr>
+        </table>
+      </div>
+      <p class="muted">Đêm show có quản lý ca làm thêm giờ; ngày thường có thể dời lịch để cân giờ làm. Giữ sẵn 4–6 part-time quen việc để xoay ca show.</p>
+
+      <h3>Quyền quyết định</h3>
+      <div class="cols">
+        <div class="card"><h4>Chủ</h4>Giá bán, menu, số part-time, nhà cung cấp, chi &gt; 2 triệu ngoài kế hoạch, dừng hoặc sang nhượng.</div>
+        <div class="card"><h4>Quản lý ca</h4>Đặt hàng hằng ngày, bật/tắt chế độ SHOW, tạm ngưng món, cho part-time về sớm khi show huỷ, đền ly cho khách phàn nàn.</div>
+      </div>
+    </section>
+
+    <!-- 2. Show night -->
+    <section id="dem-show">
+      <h2>2. Quy trình đêm show</h2>
+
+      <h3>Dòng khách tại quầy</h3>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  K["Khách xếp hàng"] --> T["Trạm thu ngân<br/>POS + QR đặt trước"]
+  Q["Đơn QR đặt trước"] --> T
+  T --> P1["Trạm pha 1<br/>cà phê, cold brew"]
+  T --> P2["Trạm pha 2<br/>trà, nước trái cây, combo"]
+  P1 --> R["Runner<br/>gọi số, trả ly, bán đồ đóng chai"]
+  P2 --> R
+  R --> X["Khách ra khu xem show"]
+</pre>
+      </div>
+      <p class="muted">Mục tiêu công suất: 60 ly/giờ cao điểm. Thu ngân ~1 phút/đơn, mỗi trạm pha ~30 ly/giờ với món pha sẵn. Khi hàng dài, runner nhận đơn ngay trên hàng.</p>
+
+      <h3>Lịch trình một đêm show</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Giờ</th><th>Việc</th><th>Ai</th></tr>
+          <tr><td class="time">Hôm trước</td><td>Ủ cold brew (12–16 giờ). Chốt dự báo số ly, đặt hàng, xác nhận part-time.</td><td>Quản lý ca</td></tr>
+          <tr><td class="time">14:00</td><td>Nhận hàng, kiểm số lượng và hạn dùng, xếp theo FIFO.</td><td>Quản lý ca</td></tr>
+          <tr><td class="time">15:00–16:30</td><td>Pha sẵn ~70% số ly dự kiến: ủ trà, nấu siro, cắt trái cây, chuẩn bị combo snack, xếp ly và nắp theo trạm.</td><td>Quản lý ca + part-time chiều</td></tr>
+          <tr><td class="time">16:00</td><td>Nhận đá đợt 1.</td><td>Quản lý ca</td></tr>
+          <tr><td class="time">16:30</td><td>Part-time ca show vào. Briefing 10 phút: số ly dự kiến, món chủ lực, phân trạm, kịch bản nếu mưa.</td><td>Quản lý ca</td></tr>
+          <tr><td class="time">17:00</td><td><strong>Bật chế độ SHOW:</strong> đổi bảng menu 6–8 món, bật menu rút gọn trên POS, mở QR đặt trước, đăng bài mạng xã hội.</td><td>Quản lý ca</td></tr>
+          <tr><td class="time">17:30–19:00</td><td>Khách đến sớm. Bổ sung pha sẵn theo tốc độ bán thực tế.</td><td>Cả đội</td></tr>
+          <tr><td class="time">19:00</td><td>Nhận đá đợt 2.</td><td>Runner</td></tr>
+          <tr class="peak"><td class="time">19:00–20:30</td><td><strong>Cao điểm.</strong> Không nhận món ngoài menu. Hàng chờ &gt; 10 người thì runner nhận đơn trên hàng và đẩy đồ đóng chai. Tạm ngưng món chậm (đá xay) nếu chờ &gt; 10 phút.</td><td>Cả đội</td></tr>
+          <tr><td class="time">20:30–21:30</td><td>Đợt khách tan show. Giảm pha sẵn, ưu tiên bán hết đồ đã pha.</td><td>Cả đội</td></tr>
+          <tr><td class="time">21:30–22:15</td><td>Đóng ca: đếm tồn, ghi số ly và hao hụt, bỏ đồ pha sẵn hết hạn, vệ sinh máy, chốt két, gửi báo cáo.</td><td>Quản lý ca + 1 part-time</td></tr>
+        </table>
+      </div>
+      <p class="muted">Giờ show giả định 19:00–20:30. Cần chỉnh theo lịch thật từ ban quản lý.</p>
+    </section>
+
+    <!-- 3. Daily -->
+    <section id="ngay-thuong">
+      <h2>3. Quy trình ngày thường</h2>
+      <div class="cols3">
+        <div class="card">
+          <h4>Mở cửa <span class="tag">6:00–6:30</span></h4>
+          <ul class="check">
+            <li>Bật máy pha, chờ đủ nhiệt 20–30 phút</li>
+            <li>Chỉnh độ xay, pha 1–2 ly thử</li>
+            <li>Kiểm tra đá, sữa, tồn đầu ngày</li>
+            <li>Đếm tiền đầu ca</li>
+            <li>Bật app giao hàng, mở cửa 6:30</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Giao ca <span class="tag">14:00</span></h4>
+          <ul class="check">
+            <li>Chốt két ca sáng, ký giao nhận</li>
+            <li>Bàn giao tồn và món sắp hết</li>
+            <li>Ghi chú khách phàn nàn, sự cố</li>
+            <li>Vệ sinh khu pha</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Đóng cửa <span class="tag">21:15–21:45</span></h4>
+          <ul class="check">
+            <li>21:15 ngừng nhận đơn app</li>
+            <li>Rửa ngược (backflush) và vệ sinh máy pha</li>
+            <li>Đếm tồn, ghi hao hụt</li>
+            <li>Chốt két, gửi báo cáo ngày</li>
+            <li>Đặt hàng cho ngày mai</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Việc trong ngày để giữ khách quen</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Khung giờ</th><th>Trọng tâm</th></tr>
+          <tr><td class="time">6:30–9:00</td><td>Khách đi làm, phụ huynh đưa con đi học: tốc độ, món quen. Nhớ tên và món của khách quen.</td></tr>
+          <tr><td class="time">9:00–15:00</td><td>Giờ vắng: đơn app, pha sẵn cho chiều, vệ sinh tổng.</td></tr>
+          <tr><td class="time">15:00–20:00</td><td>Người đi bộ ven sông: món lạnh, snack. Mời khách đăng ký thẻ tích điểm.</td></tr>
+          <tr><td class="time">20:00–21:30</td><td>Vắng dần: giảm pha sẵn, chuẩn bị đóng cửa.</td></tr>
+        </table>
+      </div>
+      <div class="callout warn">
+        <strong>Chuyển khách show thành khách quen:</strong> mỗi ly bán đêm show kèm phiếu hoặc QR "giảm 10% ly đầu ngày thường".
+        Theo dõi số phiếu được dùng lại để biết tỷ lệ chuyển đổi.
+      </div>
+    </section>
+
+    <!-- 4. Inventory -->
+    <section id="ton-kho">
+      <h2>4. Tồn kho & đặt hàng</h2>
+      <div class="callout info">
+        <strong>Công thức đặt hàng:</strong> Lượng đặt = Số ly dự báo × Định mức/ly × 1,1 − Tồn hiện có.
+        Dự báo đêm show = trung bình 2 đêm show gần nhất, điều chỉnh theo thời tiết.
+      </div>
+
+      <h3>Định mức và mức tồn (giả định, cần chốt sau 2 tuần chạy thật)</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Nguyên liệu</th><th class="num">Định mức/ly</th><th class="num">Tồn tối thiểu</th><th>Nhập</th><th>Lưu ý</th></tr>
+          <tr><td>Hạt cà phê</td><td class="num">18–20 g</td><td class="num">3 kg</td><td>2 lần/tuần</td><td>Dùng trong 3–4 tuần sau rang</td></tr>
+          <tr><td>Sữa tươi, sữa đặc</td><td class="num">30–80 ml</td><td class="num">1 ngày bán</td><td>Hằng ngày</td><td>Tủ mát, FIFO</td></tr>
+          <tr><td>Trà</td><td class="num">8–10 g</td><td class="num">2 kg</td><td>1 lần/tuần</td><td>Trà ủ dùng trong ngày</td></tr>
+          <tr><td>Đá</td><td class="num">~250 g</td><td class="num">—</td><td>Ngày thường 1 lần, đêm show 2 lần</td><td>Đêm show ~50–60 kg</td></tr>
+          <tr><td>Ly, nắp, ống hút, túi</td><td class="num">1 bộ</td><td class="num">500 bộ</td><td>1 lần/tuần</td><td>Kho chỉ ~4 m², xếp gọn</td></tr>
+          <tr><td>Snack, đồ đóng chai</td><td class="num">—</td><td class="num">1 đêm show</td><td>Trước đêm show</td><td>Đồ đóng chai là dự phòng khi quá tải</td></tr>
+        </table>
+      </div>
+
+      <div class="cols" style="margin-top:16px">
+        <div class="card"><h4>Kiểm soát hao hụt</h4>Ghi sổ mọi ly làm hỏng, ly đền và đồ pha sẵn bỏ đi. Hao hụt pha sẵn &gt; 5% thì giảm tỷ lệ pha sẵn đêm sau từ 70% xuống 60%.</div>
+        <div class="card"><h4>Nhà cung cấp</h4>Mỗi nguyên liệu chính có 2 nhà cung cấp. Đá phải có nhà cung cấp dự phòng giao được trong 30 phút.</div>
+      </div>
+    </section>
+
+    <!-- 5. Control and incidents -->
+    <section id="kiem-soat">
+      <h2>5. Kiểm soát & xử lý sự cố</h2>
+
+      <h3>Báo cáo và KPI</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Nhịp</th><th>Nội dung</th><th>Ngưỡng cảnh báo</th></tr>
+          <tr><td>Mỗi ca</td><td>Số ly, doanh thu, ly/giờ cao điểm, hao hụt, lệch két, sự cố</td><td>Lệch két &gt; 1% doanh thu ca · ly/giờ &lt; 40 (đêm show)</td></tr>
+          <tr><td>Mỗi tuần</td><td>Ly/đêm show, ly/ngày thường, tỷ lệ nguyên liệu/doanh thu, số phiếu khách quay lại</td><td>&lt; 120 ly/đêm show · &lt; 30 ly/ngày thường · nguyên liệu &gt; 35%</td></tr>
+          <tr><td>Mỗi tháng</td><td>Lãi lỗ tách riêng SHOW và DAILY, so với tiêu chí thành công/dừng</td><td>Lỗ cộng dồn gần 45 triệu (quỹ dự phòng)</td></tr>
+        </table>
+      </div>
+
+      <h3>Xử lý sự cố</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Tình huống</th><th>Xử lý ngay</th><th>Ai quyết</th></tr>
+          <tr><td>Mưa lớn / show bị huỷ</td><td>Chuyển về DAILY, cho part-time ca show về sau 1 giờ (trả công tối thiểu theo thoả thuận), giữ đồ pha sẵn còn hạn cho hôm sau, đẩy app.</td><td>Quản lý ca</td></tr>
+          <tr><td>Hết đá</td><td>Gọi đá đợt 2 sớm hoặc gọi nhà cung cấp dự phòng; tạm bán đồ nóng và đồ đóng chai.</td><td>Quản lý ca</td></tr>
+          <tr><td>Máy pha hỏng</td><td>Chuyển sang cold brew / phin, treo menu tạm, gọi kỹ thuật.</td><td>Quản lý ca, báo chủ</td></tr>
+          <tr><td>Hàng chờ &gt; 10 phút</td><td>Runner nhận đơn trên hàng, ngưng món đá xay, ưu tiên món pha sẵn và đồ đóng chai.</td><td>Quản lý ca</td></tr>
+          <tr><td>Mất điện</td><td>Bán đồ pha sẵn và đóng chai, ghi đơn tay, giữ lạnh bằng thùng đá.</td><td>Quản lý ca</td></tr>
+          <tr><td>Khách phàn nàn</td><td>Làm lại ly mới ngay, ghi sổ; phản hồi đánh giá xấu trên Google Maps trong 24 giờ.</td><td>Quản lý ca / chủ</td></tr>
+          <tr><td>Thiếu người đêm show</td><td>Gọi part-time dự phòng; nếu vẫn thiếu, cắt menu còn 4 món pha sẵn.</td><td>Quản lý ca</td></tr>
+        </table>
+      </div>
+
+      <h3>90 ngày đầu</h3>
+      <div class="cols3">
+        <div class="card"><h4>Tuần 1–2</h4>Chạy DAILY ổn định. Đêm show đầu chỉ bán 4 món pha sẵn để luyện tốc độ. Đo ly/giờ thật.</div>
+        <div class="card"><h4>Tuần 3–6</h4>Mở đủ menu show 6–8 món, bật QR đặt trước. Chốt định mức, tỷ lệ pha sẵn, số part-time.</div>
+        <div class="card"><h4>Tuần 7–12</h4>Tối ưu dự báo và đặt hàng. Cuối tuần 12 so với tiêu chí +3 tháng: ≥ 120 ly/đêm show và ≥ 30 ly/ngày thường.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Render Mermaid diagrams with a theme matching the color scheme
+  const theme = document.documentElement.dataset.theme;
+  const dark = theme ? theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", flowchart: { htmlLabels: true, curve: "basis" } });
+  }
+
+  // Highlight the menu item of the section currently in view
+  const links = [...document.querySelectorAll("nav a")];
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id));
+      }
+    });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll("main section").forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

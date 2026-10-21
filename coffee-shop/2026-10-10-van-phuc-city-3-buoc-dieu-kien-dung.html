@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ba bước, điều kiện dừng</title>
+<style>
+  /* Color tokens: same palette as "Bức tranh lớn v2" */
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --border: #e3e2dd;
+    --accent: #0f6e8c; --accent-soft: #e3f1f5;
+    --s1: #0f6e8c; --s2: #c06a12; --s3: #2f7d4f;
+    --good: #2f7d4f; --good-soft: #e5f3ea; --bad: #c0392b; --bad-soft: #f8e7e3;
+    --warn: #8a6a12; --warn-soft: #fbf3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+      --accent: #5fb8d4; --accent-soft: #1d3138;
+      --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+      --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+      --warn: #e0c060; --warn-soft: #332d1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --surface: #1e1e1c; --text: #ecebe6; --muted: #a09f99; --border: #33322f;
+    --accent: #5fb8d4; --accent-soft: #1d3138;
+    --s1: #5fb8d4; --s2: #eba45a; --s3: #6cc392;
+    --good: #6cc392; --good-soft: #1c2e23; --bad: #f08a78; --bad-soft: #352220;
+    --warn: #e0c060; --warn-soft: #332d1c;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* Layout: sticky sidebar + content */
+  .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  nav { position: sticky; top: 0; height: 100vh; padding: 28px 20px; border-right: 1px solid var(--border); background: var(--surface); }
+  nav .brand { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  nav .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 24px; }
+  nav ol { list-style: none; padding: 0; margin: 0; counter-reset: m; }
+  nav li { counter-increment: m; }
+  nav a { display: flex; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+  nav a::before { content: counter(m); font-weight: 700; min-width: 14px; }
+  nav a:hover { background: var(--accent-soft); color: var(--text); }
+
+  main { padding: 40px 48px 80px; max-width: 1120px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; background: var(--warn-soft); margin-left: 6px; vertical-align: middle; }
+  section { margin-top: 44px; }
+  h2 { font-size: 21px; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 26px 0 10px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .callout { border-radius: 10px; padding: 12px 16px; margin: 16px 0; background: var(--accent-soft); }
+  .callout.bad { background: var(--bad-soft); }
+  .callout.warn { background: var(--warn-soft); }
+  .callout.good { background: var(--good-soft); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  /* Step cards */
+  .step { border-top: 5px solid var(--sc); }
+  .step .no { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--sc); text-transform: uppercase; }
+  .step h4 { margin: 2px 0 6px; font-size: 16px; }
+  .step dl { margin: 10px 0 0; font-size: 13.5px; }
+  .step dt { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .step dd { margin: 0; }
+  .door { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; }
+  .door.two { background: var(--good-soft); color: var(--good); }
+  .door.one { background: var(--bad-soft); color: var(--bad); }
+  h2.sh { display: flex; align-items: center; gap: 10px; }
+  h2.sh::before { content: ""; width: 14px; height: 14px; border-radius: 4px; background: var(--sc); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px 8px; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td.name { font-weight: 600; }
+  .stop { color: var(--bad); font-weight: 600; }
+  .go { color: var(--good); font-weight: 600; }
+  .chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .chip.hard { background: var(--bad-soft); color: var(--bad); }
+  .chip.soft { background: var(--warn-soft); color: var(--warn); }
+  code.f { display: block; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); font: 13.5px/1.7 ui-monospace, Consolas, monospace; white-space: pre-wrap; }
+
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav { position: sticky; height: auto; padding: 10px 16px; border-right: 0; border-bottom: 1px solid var(--border); z-index: 10; }
+    nav .brand, nav .sub { display: none; }
+    nav ol { display: flex; gap: 4px; overflow-x: auto; }
+    nav a { white-space: nowrap; padding: 6px 10px; font-size: 13px; }
+    main { padding: 24px 16px 60px; }
+    .grid3 { grid-template-columns: 1fr; }
+    html { scroll-padding-top: 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <div class="brand">Ba bước, điều kiện dừng</div>
+    <div class="sub">Quán nước 5×4 m · Nhạc nước Vạn Phúc</div>
+    <ol>
+      <li><a href="#s-key">Điểm mấu chốt</a></li>
+      <li><a href="#s-cost">Chi phí cố định</a></li>
+      <li><a href="#s-map">Ba bước</a></li>
+      <li><a href="#s-1">Bước 1 · Kiểm chứng</a></li>
+      <li><a href="#s-2">Bước 2 · Cam kết</a></li>
+      <li><a href="#s-3">Bước 3 · Mùa mưa</a></li>
+      <li><a href="#s-calc">Công thức cổng</a></li>
+      <li><a href="#s-rules">Luật dừng</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header>
+      <h1>Ba bước có điều kiện dừng <span class="badge">CẬP NHẬT · 12/10/2026</span></h1>
+      <p>Tách kế hoạch "Bức tranh lớn v2" thành 3 bước. Mỗi bước chỉ chi tiền khi bước trước qua cổng. Mọi ngưỡng tính lại từ chính các con số trong v2.</p>
+      <p class="muted">12/10/2026: cập nhật theo kịch bản mới, tiền thuê 5 tr/tháng và lương 10 tr/tháng. Có thêm bảng chi phí cố định gồm điện, nước, internet. Phân tích của bản 10/10 (thuê 10–15 tr) được giữ lại để đối chiếu.</p>
+    </header>
+
+    <!-- 1. Key point -->
+    <section id="s-key">
+      <h2>1. Điểm mấu chốt</h2>
+      <div class="callout good">
+        <strong>Thuê 5 tr và lương 10 tr: quán qua cổng với biên an toàn rộng, nếu cả hai con số đứng vững.</strong>
+        Chi phí cố định giảm từ 35–42 tr xuống <strong>~20–24 tr/tháng</strong>. Lãi bình quân năm dự phóng <strong>~13–17 tr</strong> (mục tiêu ≥ 8 tr), tháng mưa <strong>~9–13 tr</strong>, hồi vốn <strong>~11–14 tháng</strong>, nằm gọn trong hợp đồng 2 năm. Doanh thu hòa vốn chỉ ~42 tr/tháng, bằng khoảng một nửa doanh thu dự kiến. Doanh thu thấp hơn dự kiến 30% vẫn còn lãi ~8 tr.
+      </div>
+      <div class="callout warn">
+        <strong>Hai giả định phải kiểm chứng trước khi tin con số trên.</strong>
+        (1) <strong>Lương 10 tr chỉ đủ khoảng 400–450 giờ công</strong> (part-time ~22–25k/giờ, giả định), tức vừa đủ 1 người cho ~450 giờ mở cửa mỗi tháng. Không còn ai cho đêm show và quản lý ca, trừ khi chủ tự đứng quầy. Nếu vậy, phần "lãi" đã gồm cả lương của chủ. Với lương 15 tr và thuê 5 tr, lãi vẫn ~8–12 tr và vẫn qua cổng: <strong>thuê 5 tr mới là con số quyết định</strong>.
+        (2) <strong>Thuê 5 tr phải được ghi cố định ≥ 3 năm, hoặc có quyền gia hạn với giá cố định.</strong> Nếu 5 tr chỉ áp dụng năm đầu rồi lên lại 15 tr, kết luận ở trên không còn đúng.
+      </div>
+      <p class="muted">Bản 10/10 (thuê 10 tr, lương 15–18 tr) chỉ ra 7,2 tr, hoặc 4,2 tr với lương 18 tr. Với thuê 15 tr, lãi còn ~2,2 tr (lương 15 tr) hoặc âm (lương 18 tr), quán không tự sống được bằng tiền đang có. Vì vậy Bước 1 vẫn có nhiệm vụ <strong>biến hai giả định trên thành văn bản và số đo thật</strong>, không chỉ xác nhận kế hoạch.</p>
+      <p>Hai mảng quyết định sống chết vẫn như v2: <strong>lịch show</strong> (~56% doanh thu, bên thứ ba quyết) và <strong>mùa mưa</strong> (lãi tụt từ 12,8 xuống ~3,2 tr trong 7 tháng). Bước 1 nhắm vào lịch show. Bước 3 nhắm vào mùa mưa.</p>
+    </section>
+
+    <!-- 1b. Monthly fixed costs (cash) -->
+    <section id="s-cost">
+      <h2>Chi phí cố định mỗi tháng</h2>
+      <p>Chỉ tiền thuê mới là số đã chốt. Các dòng còn lại là ước tính, cần kiểm chứng trước khi cọc.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Khoản</th><th class="num">Bản 10/10</th><th class="num">Hiện tại</th><th>Cách kiểm chứng</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Tiền thuê</td><td class="num">15</td><td class="num">5</td><td>Ghi cố định ≥ 3 năm hoặc có quyền gia hạn với giá cố định</td></tr>
+            <tr><td class="name">Lương</td><td class="num">15–18</td><td class="num">10</td><td>Xếp ca thật cho ~450 giờ mở cửa/tháng, cộng nhân sự đêm show</td></tr>
+            <tr><td class="name">Điện</td><td class="num">2,5–4,5</td><td class="num">2,5–4,5</td><td>~750–1.200 kWh/tháng (máy pha, 2 tủ mát, máy đá). Đơn giá kinh doanh ~3.000–3.800 đ/kWh, giả định, cần xem biểu giá EVN. Hỏi công tơ riêng hay công tơ phụ của chủ nhà</td></tr>
+            <tr><td class="name">Nước</td><td class="num">0,3–0,6</td><td class="num">0,3–0,6</td><td>10–20 m³/tháng, đồng hồ riêng hay khoán</td></tr>
+            <tr><td class="name">Internet + 4G dự phòng</td><td class="num">0,3–0,5</td><td class="num">0,3–0,5</td><td>Cáp quang + 1 SIM 4G phòng khi mất mạng đêm show</td></tr>
+            <tr><td class="name">POS, hoá đơn điện tử</td><td class="num">0,2–0,5</td><td class="num">0,2–0,5</td><td>Báo giá nhà cung cấp</td></tr>
+            <tr><td class="name">Kế toán dịch vụ</td><td class="num">1,0–1,5</td><td class="num">1,0–1,5</td><td>Bắt buộc vì từ 2026 hộ kinh doanh tự kê khai</td></tr>
+            <tr><td class="name">Rác, bảo hiểm, bảo trì máy</td><td class="num">0,9–1,7</td><td class="num">0,9–1,7</td><td>Báo giá bảo hiểm cháy nổ, đơn vị thu gom rác</td></tr>
+            <tr><td class="name">Phí quản lý khu / phí vỉa hè</td><td class="num">?</td><td class="num">?</td><td>Hỏi chủ nhà và ban quản lý, khoản này dễ bị bỏ sót</td></tr>
+            <tr><td class="name"><strong>Tổng tiền mặt</strong></td><td class="num"><strong>35–42</strong></td><td class="num"><strong>~20–24</strong></td><td>v2 giả định ~30 tr (thuê 10 + lương 15 + ~5 tr chi phí khác)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Đơn vị: triệu đồng/tháng. Chưa gồm khấu hao 180 tr / 24 tháng ≈ 7,5 tr/tháng (không chi tiền mặt, nhưng tính vào lãi thật). Cần xác nhận biên đóng góp 53% của v2 đã trừ tiền điện chưa, để tránh trừ hai lần.</p>
+    </section>
+
+    <!-- 2. Three steps overview -->
+    <section id="s-map">
+      <h2>2. Ba bước</h2>
+      <div class="grid3">
+        <div class="card step" style="--sc: var(--s1)">
+          <div class="no">Bước 1 · 10/10 → 31/10/2026</div>
+          <h4>Kiểm chứng trước khi cọc</h4>
+          <span class="door two">Quay lại được</span>
+          <dl>
+            <dt>Mục tiêu</dt><dd>Thay 4 con số "Đoán" bằng số đo thật, chốt điều khoản hợp đồng</dd>
+            <dt>Tiền rủi ro</dt><dd>Gần như 0: thời gian của chủ + chi phí khảo sát nhỏ</dd>
+            <dt>Cổng ra</dt><dd>Lãi bình quân năm dự phóng ≥ 8 tr/tháng với số đo thật</dd>
+          </dl>
+        </div>
+        <div class="card step" style="--sc: var(--s2)">
+          <div class="no">Bước 2 · 01/11 → 15/12/2026</div>
+          <h4>Cam kết và dựng quán</h4>
+          <span class="door one">Không quay lại được</span>
+          <dl>
+            <dt>Mục tiêu</dt><dd>Ký hợp đồng, xin giấy, thi công, khai trương đúng đầu mùa khô</dd>
+            <dt>Tiền rủi ro</dt><dd>Cọc + ~180 tr đầu tư, chi theo từng nấc</dd>
+            <dt>Cổng ra</dt><dd>Khai trương ≤ 15/12/2026, tổng chi ≤ 198 tr, quỹ dự phòng 45 tr còn nguyên</dd>
+          </dl>
+        </div>
+        <div class="card step" style="--sc: var(--s3)">
+          <div class="no">Bước 3 · 12/2026 → 30/11/2027</div>
+          <h4>Chạy qua một mùa khô + một mùa mưa</h4>
+          <span class="door two">Thoát được nếu đã ghi điều khoản sang nhượng</span>
+          <dl>
+            <dt>Mục tiêu</dt><dd>Chứng minh quán sống được qua mùa mưa đầu tiên</dd>
+            <dt>Tiền rủi ro</dt><dd>Tối đa quỹ dự phòng 45 tr, không bơm thêm</dd>
+            <dt>Cổng ra</dt><dd>Lãi tiền mặt thực tế 12 tháng ≥ 8 tr/tháng → gia hạn và mới bàn tăng trưởng</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="muted">Thiệt hại tối đa theo từng bước: dừng ở Bước 1 ≈ 0 · dừng giữa Bước 2 ≈ cọc + phần đã chi · dừng trong Bước 3 ≈ 185–205 tr (theo v2), trừ phần thu lại khi sang nhượng.</p>
+    </section>
+
+    <!-- 3. Step 1 -->
+    <section id="s-1">
+      <h2 class="sh" style="--sc: var(--s1)">3. Bước 1 · Kiểm chứng trước khi cọc</h2>
+      <p>Mọi việc dưới đây làm được <strong>trước khi đặt cọc</strong>. Đây là bước rẻ nhất để nói "không".</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Việc</th><th>Đo cái gì</th><th>Điều kiện dừng</th><th>Loại</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Xử lý cọc quán 7 m</td><td>Đã ký chưa, có hoàn cọc không</td><td class="stop">Chưa rõ tình trạng cọc 7 m → chưa cọc chỗ mới</td><td><span class="chip hard">Chặn</span></td></tr>
+            <tr><td class="name">Chốt nguồn vốn 250 tr</td><td>Tiền riêng hay vay, lãi vay bao nhiêu</td><td class="stop">Chưa có đủ 250 tr, hoặc phải dùng quỹ dự phòng 45 tr để đủ vốn đầu tư → dừng</td><td><span class="chip hard">Chặn</span></td></tr>
+            <tr><td class="name">Lịch show 12 tháng</td><td>Số đêm/tháng mùa khô và mùa mưa, có văn bản của ban quản lý</td><td class="stop">Ban quản lý không đưa lịch bằng văn bản → dừng. 56% doanh thu không thể dựa vào lời nói</td><td><span class="chip hard">Chặn</span></td></tr>
+            <tr><td class="name">Mùa mưa năm trước</td><td>% đêm show bị huỷ hoặc vắng khách (ban QL + 3 quầy lâu năm)</td><td>Đưa con số vào công thức cổng. Sụt &gt; 40% thì gần như chắc trượt cổng</td><td><span class="chip soft">Vào công thức</span></td></tr>
+            <tr><td class="name">Đếm 2 đêm show</td><td>Người xem, số ly quầy xung quanh bán được, giờ cao điểm kéo dài bao lâu</td><td>Đưa vào công thức. Ly/đêm dùng con số nhỏ hơn giữa nhu cầu đếm được và công suất quầy</td><td><span class="chip soft">Vào công thức</span></td></tr>
+            <tr><td class="name">Đếm 2 ngày thường</td><td>Người qua lại, số ly các quán gần bán được</td><td>Đưa vào công thức. Đây là đòn bẩy giữ quán qua mùa mưa</td><td><span class="chip soft">Vào công thức</span></td></tr>
+            <tr><td class="name">Chạy thử công suất</td><td>Pha 1 giờ với menu show 6–8 món, đủ người như đêm show</td><td>&lt; 60 ly/giờ → hạ ly/đêm show trong công thức theo công suất thật</td><td><span class="chip soft">Vào công thức</span></td></tr>
+            <tr><td class="name">Xếp ca thật</td><td>Lương 15 giờ × 30 ngày, ngày nghỉ, bảo hiểm xã hội, nhân sự đêm show</td><td>Đưa lương thật vào công thức. Mức 10 tr chỉ đủ ~1 người đứng quầy suốt giờ mở. Ghi rõ chủ tự đứng mấy ca, và tính phần đó như lương</td><td><span class="chip soft">Vào công thức</span></td></tr>
+            <tr><td class="name">Hạ tầng</td><td>Nhà vệ sinh dùng chung, công suất điện, đồng hồ điện/nước riêng và đơn giá, phí quản lý khu, chỗ đổ rác</td><td class="stop">Không có nhà vệ sinh dùng được, hoặc điện không đủ cho máy pha + máy lạnh → dừng</td><td><span class="chip hard">Chặn</span></td></tr>
+            <tr><td class="name">Điều khoản hợp đồng thuê</td><td>Thời hạn, gia hạn, khi show dừng, sang nhượng, hoàn cọc, miễn thuê thi công</td><td class="stop">Chủ nhà không chịu ghi đủ 3 điều khoản: (a) thời hạn ≥ 3 năm hoặc quyền gia hạn giá cố định; (b) xem lại giá thuê khi show dừng; (c) được sang nhượng → dừng. Giá 5 tr phải ghi cố định trong suốt thời hạn hoặc có trần tăng giá hằng năm</td><td><span class="chip hard">Chặn</span></td></tr>
+            <tr><td class="name">Báo giá đầu tư</td><td>Thi công + thiết bị, có báo giá giấy</td><td>Đưa vào công thức hồi vốn. Báo giá &gt; 198 tr (+10%) → cắt hạng mục trước khi đi tiếp</td><td><span class="chip soft">Vào công thức</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Cổng ra Bước 1 (31/10/2026).</strong> Đi tiếp chỉ khi cả hai đúng:
+        (1) không chạm điều kiện "Chặn" nào;
+        (2) chạy <a href="#s-calc">công thức cổng</a> với số đo thật ra <strong>lãi bình quân năm ≥ 8 tr/tháng</strong> và <strong>hồi vốn ≤ thời hạn hợp đồng kể cả quyền gia hạn</strong>.
+        Ra 6–8 tr: chỉ đi tiếp nếu chỉ ra được đúng một đòn bẩy cụ thể bù phần thiếu (ví dụ chủ nhà giảm thuê). Dưới 6 tr: dừng.
+      </div>
+      <p class="muted">Quá 31/10 mà chưa đủ số liệu: không kéo dài vô hạn. Hoãn cả dự án sang mùa khô năm sau thay vì cọc khi còn đoán.</p>
+    </section>
+
+    <!-- 4. Step 2 -->
+    <section id="s-2">
+      <h2 class="sh" style="--sc: var(--s2)">4. Bước 2 · Cam kết và dựng quán</h2>
+      <p>Đây là cửa một chiều. Chi tiền theo thứ tự <strong>rẻ trước, đắt sau</strong>, để còn dừng được giữa chừng với thiệt hại nhỏ nhất.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nấc</th><th>Chi gì</th><th>Điều kiện dừng trước khi sang nấc sau</th></tr></thead>
+          <tbody>
+            <tr><td class="name">2a. Ký hợp đồng, cọc</td><td>Cọc thuê (hoàn lại nếu không xin được giấy, như đã ghi ở Bước 1)</td><td class="stop">Hợp đồng ký ra khác điều khoản đã thoả thuận ở Bước 1 → không ký</td></tr>
+            <tr><td class="name">2b. Giấy phép</td><td>Hộ kinh doanh, PCCC, biển hiệu, bàn ghế ngoài trời</td><td class="stop">Bị từ chối PCCC hoặc bàn ghế ngoài trời → dừng, đòi hoàn cọc. Chưa đặt mua thiết bị nào</td></tr>
+            <tr><td class="name">2c. Thi công</td><td>Hợp đồng thi công có phạt trễ, thiết kế đơn giản</td><td class="stop">Ban QL thông báo giảm hoặc dừng show trước khai trương → dừng trước khi mua thiết bị</td></tr>
+            <tr><td class="name">2d. Thiết bị, tuyển người</td><td>Khoản chi lớn nhất, chọn máy dễ bán lại</td><td class="stop">Tổng chi dự kiến vượt 198 tr → cắt hạng mục. Không lấy quỹ dự phòng 45 tr bù vượt chi</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <strong>Cổng ra Bước 2 (15/12/2026).</strong> Khai trương ≤ 15/12/2026, tổng đầu tư ≤ 198 tr, quỹ dự phòng 45 tr còn nguyên, đủ giấy tờ.
+        <br>Nếu ngày khai trương trượt quá <strong>31/01/2027</strong>: quán chỉ còn ~3 tháng mùa khô để gây tệp khách trước khi vào mùa mưa. Lúc đó phải chạy lại công thức cổng với số tháng mùa khô còn lại, trước khi chi tiếp nấc 2d.
+      </div>
+    </section>
+
+    <!-- 5. Step 3 -->
+    <section id="s-3">
+      <h2 class="sh" style="--sc: var(--s3)">5. Bước 3 · Chạy qua một mùa khô và một mùa mưa</h2>
+      <p>Mốc +3 tháng rơi vào mùa khô nên sẽ đẹp hơn thực tế. Phép thử thật là mùa mưa đầu tiên (T5–T11/2027). Vì vậy mỗi mốc so với một ngưỡng khác nhau.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mốc</th><th>Đo</th><th class="go">Đi tiếp</th><th class="stop">Dừng (rao sang nhượng)</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Bất kỳ lúc nào</td><td>Quỹ dự phòng, lịch show</td><td>—</td><td class="stop">Đã dùng &gt; 50% quỹ dự phòng (&gt; 22,5 tr) để bù lỗ vận hành · hoặc show dừng ≥ 2 tháng mà chủ nhà không giảm thuê trong 30 ngày (với thuê 5 tr: lỗ ~0–5 tr/tháng, quỹ đủ ≥ 9 tháng. Bản 10/10: lỗ ~11–16 tr/tháng, ~3–4 tháng hết quỹ)</td></tr>
+            <tr><td class="name">+3 tháng · T3/2027 (mùa khô)</td><td>Lãi tiền mặt thật, ly/đêm show, ly/ngày thường, số đêm show thật</td><td>Chạy lại công thức cổng với số thật của mùa khô + mức sụt mùa mưa từ Bước 1: dự phóng ≥ 8 tr</td><td class="stop">Dự phóng &lt; 4 tr/tháng → rao sang nhượng ngay khi còn mùa khô, lúc giá sang nhượng tốt nhất. 4–8 tr: chọn đúng một đòn bẩy, đo lại ở +6 tháng</td></tr>
+            <tr><td class="name">+6 tháng · T6/2027 (đầu mùa mưa)</td><td>Lãi tháng mưa đầu, ly/ngày thường, số thành viên thẻ tích điểm</td><td>Lãi tháng mưa ≥ 4,6 tr (mức cần để bình quân năm đạt 8 tr khi mùa khô đạt 12,8 tr)</td><td class="stop">Tháng mưa đầu tiên lỗ tiền mặt, trong khi mốc +3 đã ở vùng 4–8 tr → dừng, không chờ hết mùa mưa</td></tr>
+            <tr><td class="name">Cuối mùa mưa · 30/11/2027</td><td>Lãi tiền mặt thật bình quân 12 tháng</td><td>≥ 8 tr/tháng → gia hạn hợp đồng, mới bắt đầu bàn "Cơ hội tăng trưởng"</td><td class="stop">&lt; 8 tr/tháng → không gia hạn, rao sang nhượng. Không bơm thêm vốn để "chờ mùa khô sau"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Chỉ số sớm, xem mỗi Chủ nhật</h3>
+      <p>Lãi tháng là chỉ số trễ. Ba con số dưới đây báo trước mùa mưa sẽ ra sao:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Chỉ số</th><th>Vì sao</th><th class="num">Ngưỡng cảnh báo</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Ly/ngày thường (TB 7 ngày)</td><td>Thứ giữ quán không lỗ khi show yếu. Mỗi 1 ly/ngày ≈ 0,37 tr lãi/tháng</td><td class="num">&lt; 50 ly trong 2 tuần liền</td></tr>
+            <tr><td class="name">Số đêm show thật/tháng</td><td>Mỗi đêm show ≈ 3 tr lãi</td><td class="num">Ít hơn lịch văn bản ≥ 2 đêm</td></tr>
+            <tr><td class="name">Thành viên thẻ tích điểm</td><td>Tệp cư dân phải xây xong trong mùa khô, trước T5/2027</td><td class="num">Đặt mục tiêu ở mốc +3 tháng</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. Gate formula -->
+    <section id="s-calc">
+      <h2>6. Công thức cổng</h2>
+      <p>Dựng lại từ chính số liệu v2 (doanh thu ~81 tr/tháng, biên đóng góp 53%, chi phí cố định ~30 tr, 5 tháng khô / 7 tháng mưa). Dùng ở cổng Bước 1 và mốc +3 tháng.</p>
+      <code class="f">Lãi bình quân năm (tr/tháng) ≈ 7,2
+   + 2,3 × (số đêm show mùa khô − 8)
+   + 1,2 × (ly/đêm show − 150) / 10
+   + 0,37 × (ly/ngày thường − 50)
+   + 1,4 × (40 − % sụt show mùa mưa) / 10
+   − (lương thật − 15)
+   − (tiền thuê − 10)
+   − (chi phí vận hành khác − 5)
+
+Hồi vốn (tháng) ≈ tổng đầu tư / lãi bình quân năm</code>
+      <p class="muted">Gần đúng tuyến tính quanh mức của v2. Ly/đêm show lấy con số nhỏ hơn giữa nhu cầu đếm được và công suất quầy đo được. "Chi phí vận hành khác" gồm điện, nước, internet, POS, kế toán, rác, bảo hiểm, bảo trì (ước tính 5–9 tr). Kiểm lại: lương 18 tr → 7,2 − 3 = 4,2 tr, khớp bảng mùa vụ của v2.</p>
+      <h3>Các kịch bản chi phí (số đo doanh thu giữ như v2)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Kịch bản</th><th class="num">Chi phí cố định</th><th class="num">Lãi bình quân năm</th><th class="num">Hồi vốn</th><th>So với cổng 8 tr</th></tr></thead>
+          <tbody>
+            <tr><td class="name">v2 gốc: thuê 10, lương 15</td><td class="num">~30</td><td class="num">7,2</td><td class="num">~25 tháng</td><td>Thiếu 0,8 tr</td></tr>
+            <tr><td class="name">Thuê 15, lương 18</td><td class="num">35–42</td><td class="num">~−5 → −1</td><td class="num">Không hồi vốn</td><td class="stop">Dừng</td></tr>
+            <tr><td class="name">Thuê 5, lương 15</td><td class="num">25–29</td><td class="num">~8–12</td><td class="num">~15–22 tháng</td><td class="go">Qua cổng</td></tr>
+            <tr><td class="name"><strong>Thuê 5, lương 10 (hiện tại)</strong></td><td class="num"><strong>~20–24</strong></td><td class="num"><strong>~13–17</strong></td><td class="num"><strong>~11–14 tháng</strong></td><td class="go">Qua cổng, dư 5–9 tr</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Đơn vị: triệu đồng/tháng. Khoảng giá trị đến từ chi phí vận hành khác (5–9 tr). Hai biến quyết định doanh thu (số đêm show, ly/đêm) vẫn là đoán cho tới khi đo ở Bước 1. Với chi phí cố định ~22 tr, chỉ có kịch bản show dừng hẳn mới làm quán lỗ.</p>
+    </section>
+
+    <!-- 7. Rules -->
+    <section id="s-rules">
+      <h2>7. Luật dừng</h2>
+      <div class="card">
+        <ol style="margin:0; padding-left: 20px;">
+          <li><strong>Ngưỡng ký trước, số liệu đến sau.</strong> Ký tờ ngưỡng này trước khi cọc. Không sửa ngưỡng sau khi thấy kết quả.</li>
+          <li><strong>Người quyết dừng không phải người bỏ vốn.</strong> Một người ngoài (mảng Chủ &amp; quản trị của v2) giữ tờ ngưỡng và đọc kết quả ở mỗi cổng.</li>
+          <li><strong>Tiền đã chi không vào phép tính.</strong> Câu hỏi ở mỗi cổng chỉ là: từ hôm nay trở đi, quán có đạt 8 tr/tháng không.</li>
+          <li><strong>Trần vốn 250 tr.</strong> Không vay thêm, không bơm thêm ngoài quỹ dự phòng 45 tr.</li>
+          <li><strong>Không làm trước cuối mùa mưa 2027:</strong> đối tác chính của show, đồ uống sự kiện, combo kèm vé, mở rộng menu quá 8 món. Tăng trưởng chỉ bàn sau khi qua cổng Bước 3.</li>
+        </ol>
+      </div>
+      <div class="callout warn">
+        <strong>Câu hỏi quyết định trước 31/10:</strong> (1) chủ nhà có ký giá thuê 5 tr cố định ≥ 3 năm (hoặc có quyền gia hạn với giá cố định) không? (2) Ban quản lý có chịu đưa lịch show 12 tháng bằng văn bản không? Nếu không, ~56% doanh thu đang dựa vào một lời hứa, và mọi con số khác trong kế hoạch không còn ý nghĩa.
+      </div>
+      <p class="muted">Báo cáo tự lập, dựa trên giả định của "Bức tranh lớn v2" (06/10/2026), cập nhật 12/10/2026 với thuê 5 tr, lương 10 tr. Hầu hết con số vẫn là đoán cho tới khi xong Bước 1.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>
